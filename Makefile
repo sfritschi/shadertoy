@@ -1,5 +1,5 @@
 CC=clang
-CFLAGS=-Wall -Wextra -Wpedantic -std=c11 -O2
+CFLAGS=-Wall -Wextra -Wpedantic -std=c11 -g -O0
 
 LIBFLAGS =$(shell pkg-config --libs opengl)
 LIBFLAGS+=$(shell pkg-config --libs glew)
@@ -10,7 +10,7 @@ TARGET=shadertoy
 all: $(TARGET)
 
 $(TARGET): $(TARGET).c
-	$(CC) $(CFLAGS) -o $@ $^ $(LIBFLAGS)
+	$(CC) $(CFLAGS) -o $@ $^ -Iinclude $(LIBFLAGS)
 
 clean:
 	$(RM) $(TARGET)

@@ -12,13 +12,6 @@ const vec2 roots[] = {
     vec2(-0.5, -sqrt(3.0)/2.0)
 };
 
-// Colors associated with individual roots
-//const vec3 colors[] = {
-//    vec3(0.0, 0.0, 1.0),  // blue
-//    vec3(0.0, 1.0, 0.0),  // green
-//    vec3(1.0, 0.0, 0.0)   // red
-//};
-
 const vec3 colors[] = {
     vec3(1.0, 1.0, 1.0),                                // white
     vec3(85.0 / 255.0, 205.0 / 255.0, 252.0 / 255.0),   // blue
@@ -26,10 +19,29 @@ const vec3 colors[] = {
 };
 
 const float circleRadius = 0.05;
-const vec3 circleColor = vec3(0.0, 0.0, 0.0);
+const vec3 circleColor = vec3(0.05);
 
 // Animation parameter
 const int nSecondsRepeat = 20;  // repeat after every 20 seconds
+
+vec3 convergedColor(vec2 uv, float aspect) 
+{
+    int minIndex = 0;
+    float minDist = 1000.0;  // arbitrary
+    for (int i = 0; i < 3; ++i)
+    {
+        vec2 r = roots[i];
+        r.x *= aspect;
+        
+        const float dist = distance(uv, r);
+        if (dist < minDist) {
+            minDist = dist;
+            minIndex = i;
+        }
+    }
+    
+    return colors[minIndex];
+}
 
 void main()
 {
@@ -39,26 +51,19 @@ void main()
     
     vec2 w = 4.0 * uv - 2.0;  // transform to [-2,2] range
     w.x *= aspect;  // aspect ratio (orthographic projection)
-    
-    bool isCircle = false;
+        
+    float circleMask = 0.0;
     for (int i = 0; i < 3; ++i)
     {
         vec2 r = roots[i];
         r.x *= aspect;
         
-        if (distance(w, r) < circleRadius)
-        {
-            isCircle = true;
-            break;
-        }
+        const float dist = distance(w, r);
+        const float mag  = length(vec2(dFdx(dist), dFdy(dist)));
+        const float soft = smoothstep(circleRadius + mag, circleRadius - mag, dist);
+        circleMask += soft;
     }
-    
-    if (isCircle)
-    {
-        // Draw circle around root
-        outColor = vec4(circleColor.rgb, 1.0);
-        return;  // done
-    }
+    circleMask = clamp(circleMask, 0.0, 1.0);
     
     // Newton iteration using w as initial guess
     const int nIter = int(currentTime) % nSecondsRepeat;
@@ -82,21 +87,20 @@ void main()
         w = w - invJac * p;
     }
     
-    // Find index of closest root that this initial guess converged to
-    int closest = 0;
-    float minimum = 10000.0;  // arbitrary
-    for (int i = 0; i < 3; ++i)
-    {
-        vec2 r = roots[i];
-        r.x *= aspect;
-        
-        const float dist = distance(w, r);
-        if (dist < minimum)
-        {
-            minimum = dist;
-            closest = i;
-        }
-    }
+    //const float h = 1.0 / viewPortSize.y;
+    //
+    //const vec2 blend = fract(w * viewPortSize.y);
+    //
+    //vec3 color_x1 = convergedColor(w + vec2(0.0, 0.0), aspect);
+    //vec3 color_x2 = convergedColor(w + vec2(h, 0.0), aspect);
+    //vec3 color_y1 = convergedColor(w + vec2(0.0, h), aspect);
+    //vec3 color_y2 = convergedColor(w + vec2(h, h), aspect);
+    //
+    //vec3 color_x = mix(color_x1, color_x2, blend.x);
+    //vec3 color_y = mix(color_y1, color_y2, blend.x);
+    //vec3 colorFractal = mix(color_x, color_y, blend.y);
     
-    outColor = vec4(colors[closest], 1.0);
+    vec3 colorFractal = convergedColor(w, aspect);
+    
+    outColor = vec4(mix(colorFractal, circleColor, circleMask), 1.0);
 }
