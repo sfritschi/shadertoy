@@ -1,5 +1,5 @@
 CC=clang
-CFLAGS=-Wall -Wextra -Wpedantic -std=c11 -g -O0
+CFLAGS=-Wall -Wextra -Wpedantic -std=c11 -O2
 
 LIBFLAGS =$(shell pkg-config --libs opengl)
 LIBFLAGS+=$(shell pkg-config --libs glew)
