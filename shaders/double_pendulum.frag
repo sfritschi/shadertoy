@@ -5,7 +5,7 @@ layout (location = 0) out vec4 outColor;
 uniform vec2 viewPortSize;
 uniform float deltaTime;
 
-uniform sampler2D input;
+uniform sampler2D currentState;
 
 const float M_PI = 3.1415926535897932384626433832795;
 const float g = 9.81; // m/s^2
@@ -53,7 +53,7 @@ void main()
     const vec2 uv = gl_FragCoord.xy / viewPortSize.xy;     // [0, 1]^2
     const float aspect = viewPortSize.x / viewPortSize.y;  // aspect ratio
     
-    const vec4 alphaInput = texture(input, uv);
+    const vec4 alphaInput = texture(currentState, uv);
     
     outColor = rk4(alphaInput, deltaTime);
 }
