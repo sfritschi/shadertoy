@@ -12,5 +12,7 @@ void main()
 {
     const vec4 alpha = texture(currentState, gl_FragCoord.xy / viewPortSize);
     
+    // Map double pendulum angles in range [-pi, pi]^2 to a color in the
+    // range of [0, 1]^3
     outColor = vec4((alpha.xy / M_PI + 1.0) * 0.5, 1.0, 1.0);
 }
